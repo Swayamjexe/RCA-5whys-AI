@@ -1,0 +1,31 @@
+# Core AI & Inference (CPU Optimized)
+# Note: llama-cpp-python may need manual install on some systems:
+# pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+llama-cpp-python==0.3.2
+
+# LangGraph and LangChain Ecosystem
+langgraph==1.0.5
+langgraph-checkpoint==3.0.1
+langchain-core==1.2.1
+
+# FastAPI and Web Server
+fastapi==0.123.10
+uvicorn==0.38.0
+python-multipart==0.0.20
+starlette==0.50.0
+
+# Gradio UI
+gradio==5.50.0
+gradio_client==1.14.0
+
+# Data Handling & Validation
+pydantic==2.12.3
+pydantic_core==2.41.4
+numpy==1.26.4
+
+# Utilities & Requests
+requests==2.32.4
+tqdm==4.67.1
+filelock==3.20.0
+typing_extensions==4.15.0
+aiofiles==23.2.1
