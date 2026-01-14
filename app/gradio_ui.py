@@ -128,7 +128,13 @@ def process_user_input(user_msg, history, session):
         # Case C: Root Cause Extracted (Analysis Complete)
         if data.get("root_cause_extracted"):
             root_cause = data["root_cause"]
-            history.append({"role": "assistant", "content": f"✅ **Root Cause Identified!**\n\n### 🎯 Root Cause\n{root_cause}\n\n🔄 Generating comprehensive report..."})
+            
+            # NEW: Check if early stopping occurred
+            early_stop_msg = ""
+            if data.get("why_no") < 5:
+                early_stop_msg = f"\n\n🎯 **Early Termination at Why {data['why_no']}**\nSystematic root cause identified - no need to continue to Why 5.\n"
+            
+            history.append({"role": "assistant", "content": f"✅ **Root Cause Identified!**{early_stop_msg}\n### 🎯 Root Cause\n{root_cause}\n\n📄 Generating comprehensive report..."})
             
             # Set flag to True so the next event knows to generate report
             session["root_cause_found"] = True
@@ -277,7 +283,7 @@ def create_gradio_interface():
             with gr.Group():
                 with gr.Row():
                     gr.Markdown("### 💬 Chat History")
-                    close_drawer_btn = gr.Button("❌ Close", size="sm", variant="secondary")
+                    close_drawer_btn = gr.Button("✖ Close", size="sm", variant="secondary")
                 
                 chat_history_display = gr.Chatbot(
                     height=400,

@@ -78,7 +78,8 @@ async def start_analysis(request: StartAnalysisRequest):
         "current_question": "",
         "needs_improvement": False,
         "improvement_suggestion": "",
-        "improved_input": ""
+        "improved_input": "",
+        "early_root_cause_found": False  # NEW FIELD ADDED
     }
     
     from app.node_definitions import why_asker

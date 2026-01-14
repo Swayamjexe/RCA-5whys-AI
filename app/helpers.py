@@ -19,6 +19,7 @@ class RCAState(TypedDict):
     user_input: str  # User's answer to current why
     needs_validation: bool  # Flag for answer validation
     retry_count: int  # Number of validation retries
+    early_root_cause_found: bool  # NEW: Flag for systematic root cause detection at Why 4+
 
 
 def format_whys_context(whys: list[dict]) -> str:

@@ -15,9 +15,15 @@ from app.node_definitions import (
 
 
 def should_continue_or_validate(state: RCAState) -> str:
-    """Decide next node: validate answer or continue/extract - exact copy from notebook"""
+    """
+    Decide next node: validate answer or continue/extract
+    UPDATED: Added check for early systematic root cause
+    """
     if state.get("needs_validation", False):
         return "validate"
+    # NEW CHECK: Early stopping if systematic root cause found at Why 4+
+    elif state.get("early_root_cause_found", False):
+        return "extract"
     elif state["why_no"] < 5:
         return "continue"
     else:

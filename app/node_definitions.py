@@ -12,7 +12,8 @@ from app.prompt_definitions import (
     create_why_prompt,
     create_root_cause_prompt,
     create_validation_prompt,
-    create_report_prompt
+    create_report_prompt,
+    create_systematic_root_cause_check_prompt  # NEW IMPORT
 )
 from app.model_loading import generate_response, generate_response_extended, generate_validation_response
 
@@ -50,13 +51,15 @@ def why_asker(state: RCAState) -> RCAState:
 
 
 def answer_validator(state: RCAState) -> RCAState:
-    """Node that validates user answers for quality - exact copy from notebook"""
+    """Node that validates user answers for quality - WITH EARLY STOPPING CHECK"""
     print(f"\n{'='*60}")
     print("ANSWER VALIDATOR NODE")
     print(f"{'='*60}")
     
     question = state.get("current_question", "")
-    answer = state.get("user_input", "")
+    
+    # FIXED: Use improved_input if available, otherwise use user_input
+    answer = state.get("improved_input", "") or state.get("user_input", "")
     
     # Generate validation
     validation_prompt = create_validation_prompt(question, answer)
@@ -106,22 +109,53 @@ def answer_validator(state: RCAState) -> RCAState:
         if not state.get("improved_input"):
             return state
         else:
-            # Use improved input
+            # FIXED: Update user_input with improved version before accepting
             state["user_input"] = state["improved_input"]
             state["improved_input"] = ""
-            # Re-validate
+            # Re-validate with the improved answer
             return answer_validator(state)
     
-    # Accept the answer
+    # FIXED: Accept the answer using the correct input source
+    final_answer = state.get("improved_input", "") or state.get("user_input", "")
+    
     state["whys"].append({
         "question": question,
-        "answer": state["user_input"],
+        "answer": final_answer,
         "quality_score": quality_score
     })
     
+    # Clear improvement fields after successful acceptance
     state["needs_validation"] = False
     state["needs_improvement"] = False
+    state["improved_input"] = ""
+    
     print(f"✓ Answer accepted")
+    
+    # ========================================================================
+    # NEW LOGIC: Check for systematic root cause at Why 4 or later
+    # ========================================================================
+    if state["why_no"] >= 4:
+        print(f"\n[Early Stop Check] Evaluating if systematic root cause reached...")
+        
+        systematic_check_prompt = create_systematic_root_cause_check_prompt(final_answer)
+        systematic_response = generate_validation_response(systematic_check_prompt)
+        
+        is_systematic = False
+        for line in systematic_response.split('\n'):
+            if 'Systematic:' in line:
+                is_systematic = 'yes' in line.lower()
+                break
+        
+        if is_systematic:
+            print(f"✓ SYSTEMATIC ROOT CAUSE DETECTED at Why {state['why_no']}!")
+            print(f"   Triggering early stopping...")
+            state["early_root_cause_found"] = True
+        else:
+            print(f"  → Not yet systematic, continuing...")
+            state["early_root_cause_found"] = False
+    else:
+        state["early_root_cause_found"] = False
+    # ========================================================================
     
     return state
 

@@ -62,6 +62,51 @@ Needs Improvement: [yes/no]
 Suggestion: [If needs improvement, provide a brief suggestion for what additional details would help]"""
 
 
+def create_systematic_root_cause_check_prompt(answer: str) -> str:
+    return f"""You are evaluating whether the given answer identifies a SYSTEMATIC root cause.
+
+Definition: A SYSTEMATIC root cause refers to failures at the organizational, process, or system level — not individual mistakes.
+
+An answer IS systematic if it indicates any of the following:
+
+Missing, skipped, inadequate, or undefined PROCESS
+
+Missing, weak, unenforced, or unclear POLICY
+
+Lack of TRAINING or standardized knowledge
+
+Skipped, absent, or poorly managed PREVENTIVE MAINTENANCE
+
+Design or failure of a SYSTEM, workflow, or tool
+
+Organizational or structural failure
+
+Repeated or routine issues (even if performed by people)
+
+An answer IS NOT systematic if it ONLY refers to:
+
+A single individual’s mistake or negligence
+
+A one-time human error with no process implication
+
+Random equipment failure with no maintenance or system implication
+
+⚠️ Important Rule
+If the answer mentions that something was “skipped,” “not done,” “not followed,” or “missing” and that thing is normally governed by a process, policy, or schedule, it MUST be classified as SYSTEMATIC.
+
+Input Answer:
+
+"{answer}"
+
+Output Rules:
+
+Respond with ONLY ONE of the following (no explanation):
+
+Systematic: yes
+OR
+Systematic: no"""
+
+
 def create_report_prompt(problem: str, whys_context: str, root_cause: str, confidence: float, section: str) -> str:
     """Create prompt for generating specific report section - exact copy from notebook"""
     
