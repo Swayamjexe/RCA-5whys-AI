@@ -107,57 +107,99 @@ OR
 Systematic: no"""
 
 
-def create_report_prompt(problem: str, whys_context: str, root_cause: str, confidence: float, section: str) -> str:
-    """Create prompt for generating specific report section - exact copy from notebook"""
-    
-    base_context = f"""Problem/Incident: {problem}
+def create_full_report_prompt(problem, whys, root_cause, confidence):
+    return f"""
+Problem/Incident:
+{problem}
 
 Analysis Process:
-{whys_context}
+{whys}
 
-Root Cause: {root_cause}
-Confidence Level: {confidence:.1f}%"""
+Root Cause:
+{root_cause}
+
+Confidence Level:
+{confidence:.1f}%
+
+INSTRUCTIONS:
+- Produce a COMPLETE RCA report
+- Use concise, professional language
+- Never leave a section incomplete
+- Prefer brevity over truncation
+
+STRUCTURE:
+
+## 1. Executive Summary
+(2–4 paragraphs)
+
+## 2. Detailed Analysis
+- Problem statement
+- 5 Whys breakdown
+- Root cause explanation
+
+## 3. Corrective and Preventive Actions
+- Immediate (3 bullets)
+- Long-term (3 bullets)
+
+## 4. Recommendations and Follow-up
+- Process improvements
+- Monitoring
+- Review schedule
+"""
+
+
+
+# def create_report_prompt(problem: str, whys_context: str, root_cause: str, confidence: float, section: str) -> str:
+#     """Create prompt for generating specific report section - exact copy from notebook"""
     
-    if section == "executive":
-        return f"""{base_context}
+#     base_context = f"""Problem/Incident: {problem}
 
-Write the EXECUTIVE SUMMARY section for this RCA report. Include:
-- Brief incident overview (2-3 sentences)
-- High-level root cause statement
-- Overall impact
+# Analysis Process:
+# {whys_context}
 
-Keep it concise and executive-focused."""
+# Root Cause: {root_cause}
+# Confidence Level: {confidence:.1f}%"""
     
-    elif section == "analysis":
-        return f"""{base_context}
+#     if section == "executive":
+#         return f"""{base_context}
 
-Write the DETAILED ANALYSIS section. Include:
-- Problem Statement with impact details
-- The 5 Whys methodology application
-- Step-by-step breakdown of each Why and answer
-- Root cause identification with confidence reasoning
+# Write the EXECUTIVE SUMMARY section for this RCA report. Include:
+# - Brief incident overview (2-3 sentences)
+# - High-level root cause statement
+# - Overall impact
 
-Be thorough and technical."""
+# Keep it concise and executive-focused."""
     
-    elif section == "actions":
-        return f"""{base_context}
+#     elif section == "analysis":
+#         return f"""{base_context}
 
-Write the CORRECTIVE AND PREVENTIVE ACTIONS section. Include:
-- Immediate corrective actions (3 specific items)
-- Long-term preventive measures (3 specific items)
-- Each action should be concrete and actionable
+# Write the DETAILED ANALYSIS section. Include:
+# - Problem Statement with impact details
+# - The 5 Whys methodology application
+# - Step-by-step breakdown of each Why and answer
+# - Root cause identification with confidence reasoning
 
-Focus on practical solutions."""
+# Be thorough and technical."""
     
-    elif section == "recommendations":
-        return f"""{base_context}
+#     elif section == "actions":
+#         return f"""{base_context}
 
-Write the RECOMMENDATIONS AND FOLLOW-UP section. Include:
-- Process improvement recommendations (2-3 items)
-- Monitoring and alerting improvements
-- Follow-up actions and review schedule
-- Key learnings
+# Write the CORRECTIVE AND PREVENTIVE ACTIONS section. Include:
+# - Immediate corrective actions (3 specific items)
+# - Long-term preventive measures (3 specific items)
+# - Each action should be concrete and actionable
 
-Make it actionable and forward-looking."""
+# Focus on practical solutions."""
     
-    return ""
+#     elif section == "recommendations":
+#         return f"""{base_context}
+
+# Write the RECOMMENDATIONS AND FOLLOW-UP section. Include:
+# - Process improvement recommendations (2-3 items)
+# - Monitoring and alerting improvements
+# - Follow-up actions and review schedule
+# - Key learnings
+
+# Make it actionable and forward-looking."""
+    
+#     return ""

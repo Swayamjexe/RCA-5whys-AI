@@ -12,7 +12,7 @@ from app.prompt_definitions import (
     create_why_prompt,
     create_root_cause_prompt,
     create_validation_prompt,
-    create_report_prompt,
+    create_full_report_prompt,
     create_systematic_root_cause_check_prompt  # NEW IMPORT
 )
 from app.model_loading import generate_response, generate_response_extended, generate_validation_response
@@ -198,103 +198,124 @@ def root_cause_extractor(state: RCAState) -> RCAState:
 
 
 def report_generator(state: RCAState) -> RCAState:
-    """Node that generates final standardized RCA report - exact copy from notebook"""
-    print(f"\n{'='*60}")
-    print("REPORT GENERATOR NODE")
-    print(f"{'='*60}")
-    print("\nGenerating comprehensive report in sections...")
-    
-    whys_context = format_whys_context(state["whys"])
-    
-    # Section-based generation to overcome token limits
-    sections = {}
-    
-    print("\n[1/4] Generating Executive Summary...")
-    sections["executive"] = generate_response_extended(
-        create_report_prompt(
-            state["problem"],
-            whys_context,
-            state["root_cause"],
-            state["confidence_score"],
-            "executive"
-        ),
-        max_tokens=400
+    print("\nGenerating full RCA report (single-pass)...")
+
+    prompt = create_full_report_prompt(
+        state["problem"],
+        format_whys_context(state["whys"]),
+        state["root_cause"],
+        state["confidence_score"]
     )
-    
-    print("[2/4] Generating Detailed Analysis...")
-    sections["analysis"] = generate_response_extended(
-        create_report_prompt(
-            state["problem"],
-            whys_context,
-            state["root_cause"],
-            state["confidence_score"],
-            "analysis"
-        ),
-        max_tokens=500
+
+    report = generate_response_extended(
+        prompt,
+        max_tokens=1400   # more than sum of parts
     )
-    
-    print("[3/4] Generating Corrective Actions...")
-    sections["actions"] = generate_response_extended(
-        create_report_prompt(
-            state["problem"],
-            whys_context,
-            state["root_cause"],
-            state["confidence_score"],
-            "actions"
-        ),
-        max_tokens=400
-    )
-    
-    print("[4/4] Generating Recommendations...")
-    sections["recommendations"] = generate_response_extended(
-        create_report_prompt(
-            state["problem"],
-            whys_context,
-            state["root_cause"],
-            state["confidence_score"],
-            "recommendations"
-        ),
-        max_tokens=400
-    )
-    
-    # Assemble complete report
-    complete_report = f"""## 1. EXECUTIVE SUMMARY
 
-{sections["executive"]}
-
----
-
-## 2. DETAILED ANALYSIS
-
-{sections["analysis"]}
-
----
-
-## 3. CORRECTIVE AND PREVENTIVE ACTIONS
-
-{sections["actions"]}
-
----
-
-## 4. RECOMMENDATIONS AND FOLLOW-UP
-
-{sections["recommendations"]}
-
----
-"""
-    
-    state["report"] = complete_report
-    
-    print("\n" + "="*60)
-    print("STANDARDIZED RCA REPORT")
-    print("="*60)
-    print(complete_report)
-    print("\n" + "="*60)
-    print(f"Overall Confidence: {state['confidence_score']:.1f}%")
-    print("="*60)
-    
-    # Export to markdown
-    filename = export_report_to_markdown(state)
-    print(f"\n💾 Report exported to: {filename}")
-    
+    state["report"] = report
+    export_report_to_markdown(state)
     return state
+
+
+
+# def report_generator(state: RCAState) -> RCAState:
+#     """Node that generates final standardized RCA report - exact copy from notebook"""
+#     print(f"\n{'='*60}")
+#     print("REPORT GENERATOR NODE")
+#     print(f"{'='*60}")
+#     print("\nGenerating comprehensive report in sections...")
+    
+#     whys_context = format_whys_context(state["whys"])
+    
+#     # Section-based generation to overcome token limits
+#     sections = {}
+    
+#     print("\n[1/4] Generating Executive Summary...")
+#     sections["executive"] = generate_response_extended(
+#         create_report_prompt(
+#             state["problem"],
+#             whys_context,
+#             state["root_cause"],
+#             state["confidence_score"],
+#             "executive"
+#         ),
+#         max_tokens=400
+#     )
+    
+#     print("[2/4] Generating Detailed Analysis...")
+#     sections["analysis"] = generate_response_extended(
+#         create_report_prompt(
+#             state["problem"],
+#             whys_context,
+#             state["root_cause"],
+#             state["confidence_score"],
+#             "analysis"
+#         ),
+#         max_tokens=500
+#     )
+    
+#     print("[3/4] Generating Corrective Actions...")
+#     sections["actions"] = generate_response_extended(
+#         create_report_prompt(
+#             state["problem"],
+#             whys_context,
+#             state["root_cause"],
+#             state["confidence_score"],
+#             "actions"
+#         ),
+#         max_tokens=400
+#     )
+    
+#     print("[4/4] Generating Recommendations...")
+#     sections["recommendations"] = generate_response_extended(
+#         create_report_prompt(
+#             state["problem"],
+#             whys_context,
+#             state["root_cause"],
+#             state["confidence_score"],
+#             "recommendations"
+#         ),
+#         max_tokens=400
+#     )
+    
+#     # Assemble complete report
+#     complete_report = f"""## 1. EXECUTIVE SUMMARY
+
+# {sections["executive"]}
+
+# ---
+
+# ## 2. DETAILED ANALYSIS
+
+# {sections["analysis"]}
+
+# ---
+
+# ## 3. CORRECTIVE AND PREVENTIVE ACTIONS
+
+# {sections["actions"]}
+
+# ---
+
+# ## 4. RECOMMENDATIONS AND FOLLOW-UP
+
+# {sections["recommendations"]}
+
+# ---
+# """
+    
+#     state["report"] = complete_report
+    
+#     print("\n" + "="*60)
+#     print("STANDARDIZED RCA REPORT")
+#     print("="*60)
+#     print(complete_report)
+#     print("\n" + "="*60)
+#     print(f"Overall Confidence: {state['confidence_score']:.1f}%")
+#     print("="*60)
+    
+#     # Export to markdown
+#     filename = export_report_to_markdown(state)
+#     print(f"\n💾 Report exported to: {filename}")
+    
+#     return state
