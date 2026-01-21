@@ -1,7 +1,7 @@
 # Core AI & Inference (CPU Optimized)
 # Note: llama-cpp-python may need manual install on some systems:
 # pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
-llama-cpp-python==0.3.2
+llama-cpp-python==0.3.16
 
 # LangGraph and LangChain Ecosystem
 langgraph==1.0.5
