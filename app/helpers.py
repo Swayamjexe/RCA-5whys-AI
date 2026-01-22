@@ -93,7 +93,7 @@ def export_report_to_markdown(state: RCAState, filename: str = "rca_report.md") 
 **Overall Confidence Score:** {state['confidence_score']:.1f}%
 """
     
-    with open(filename, 'w') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         f.write(markdown_content)
     
     return filename
